@@ -304,7 +304,7 @@ export default function Dashboard({
         </TabsList>
 
         <TabsContent value="flow">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-between items-center mb-6">
             <h2 className="text-2xl font-bold">介護の流れ</h2>
             <Tabs defaultValue={initialCareType || "sudden"} onValueChange={(value) => setCareType(value as "sudden" | "gradual")}>
               <TabsList>
@@ -314,48 +314,24 @@ export default function Dashboard({
             </Tabs>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="space-y-4">
-              {careType === "sudden" ? (
-                <SuddenTypeTimeline 
-                  selectedPhase={selectedPhase} 
-                  onPhaseSelect={setSelectedPhase} 
-                  phases={phases}
-                  onUpdateProgress={updatePhaseProgress}
-                />
-              ) : (
-                <GradualTypeTimeline 
-                  selectedPhase={selectedPhase} 
-                  onPhaseSelect={setSelectedPhase}
-                  phases={gradualPhases}
-                  onUpdateProgress={updatePhaseProgress}
-                />
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>やるべきことと参考資料</CardTitle>
-                  <CardDescription>現在のフェーズで優先すべきタスクと参考資料</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {careType === "sudden" ? (
-                    <SuddenTypeTasks 
-                      selectedPhase={selectedPhase} 
-                      onUpdateProgress={(progress) => updatePhaseProgress(selectedPhase, progress)}
-                      onNavigateToLibrary={handleNavigateToSuddenLibrary}
-                    />
-                  ) : (
-                    <GradualTypeTasks 
-                      selectedPhase={selectedPhase}
-                      onUpdateProgress={(progress) => updatePhaseProgress(selectedPhase, progress)}
-                      onNavigateToLibrary={handleNavigateToGradualLibrary}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+          <div className="space-y-4">
+            {careType === "sudden" ? (
+              <SuddenTypeTimeline 
+                selectedPhase={selectedPhase} 
+                onPhaseSelect={setSelectedPhase} 
+                phases={phases}
+                onUpdateProgress={updatePhaseProgress}
+                onNavigateToLibrary={handleNavigateToSuddenLibrary}
+              />
+            ) : (
+              <GradualTypeTimeline 
+                selectedPhase={selectedPhase} 
+                onPhaseSelect={setSelectedPhase}
+                phases={gradualPhases}
+                onUpdateProgress={updatePhaseProgress}
+                onNavigateToLibrary={handleNavigateToGradualLibrary}
+              />
+            )}
           </div>
         </TabsContent>
 
@@ -1004,37 +980,57 @@ function SuddenTypeTimeline({
   selectedPhase, 
   onPhaseSelect,
   phases,
-  onUpdateProgress
+  onUpdateProgress,
+  onNavigateToLibrary
 }: { 
   selectedPhase: number; 
   onPhaseSelect: (phaseId: number) => void;
   phases: Phase[];
   onUpdateProgress: (phaseId: number, progress: number) => void;
+  onNavigateToLibrary: () => void;
 }) {
   return (
     <div className="space-y-4">
       {phases.map((phase) => (
-        <Card 
-          key={phase.id} 
-          className={`cursor-pointer hover:shadow-md transition-shadow ${selectedPhase === phase.id ? "border-primary shadow-lg" : "opacity-70"}`}
-          onClick={() => onPhaseSelect(phase.id)}
-        >
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-base">{phase.name}</CardTitle>
-              <span className="text-sm text-muted-foreground">{phase.period}</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>進捗</span>
-                <span>{phase.progress}%</span>
+        <div key={phase.id} className="space-y-4">
+          <Card 
+            className={`cursor-pointer hover:shadow-md transition-shadow ${selectedPhase === phase.id ? "border-primary shadow-lg" : "opacity-70"}`}
+            onClick={() => onPhaseSelect(phase.id)}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <CardTitle className="text-base">{phase.name}</CardTitle>
+                <span className="text-sm text-muted-foreground">{phase.period}</span>
               </div>
-              <Progress value={phase.progress} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>進捗</span>
+                  <span>{phase.progress}%</span>
+                </div>
+                <Progress value={phase.progress} className="h-2" />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* 選択されているフェーズの場合のみタスクを表示 */}
+          {selectedPhase === phase.id && (
+            <Card>
+              <CardHeader>
+                <CardTitle>やるべきことと参考資料</CardTitle>
+                <CardDescription>現在のフェーズで優先すべきタスクと参考資料</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <SuddenTypeTasks 
+                  selectedPhase={selectedPhase}
+                  onUpdateProgress={(progress) => onUpdateProgress(selectedPhase, progress)}
+                  onNavigateToLibrary={onNavigateToLibrary}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       ))}
     </div>
   )
@@ -1044,42 +1040,62 @@ function GradualTypeTimeline({
   selectedPhase, 
   onPhaseSelect,
   phases,
-  onUpdateProgress
+  onUpdateProgress,
+  onNavigateToLibrary
 }: { 
   selectedPhase: number; 
   onPhaseSelect: (phaseId: number) => void;
   phases: Phase[];
   onUpdateProgress: (phaseId: number, progress: number) => void;
+  onNavigateToLibrary: () => void;
 }) {
   return (
     <div className="space-y-4">
       {phases.map((phase) => (
-        <Card 
-          key={phase.id} 
-          className={`cursor-pointer hover:shadow-md transition-shadow ${selectedPhase === phase.id ? "border-primary shadow-lg" : "opacity-70"}`}
-          onClick={() => onPhaseSelect(phase.id)}
-        >
-          <CardHeader className="pb-2">
-            <div className="flex justify-between items-center">
-              <div>
-                <CardTitle className="text-base">{phase.name}</CardTitle>
-                {phase.description && (
-                  <p className="text-sm text-muted-foreground">{phase.description}</p>
-                )}
+        <div key={phase.id} className="space-y-4">
+          <Card 
+            className={`cursor-pointer hover:shadow-md transition-shadow ${selectedPhase === phase.id ? "border-primary shadow-lg" : "opacity-70"}`}
+            onClick={() => onPhaseSelect(phase.id)}
+          >
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-center">
+                <div>
+                  <CardTitle className="text-base">{phase.name}</CardTitle>
+                  {phase.description && (
+                    <p className="text-sm text-muted-foreground">{phase.description}</p>
+                  )}
+                </div>
+                <span className="text-sm text-muted-foreground">{phase.period}</span>
               </div>
-              <span className="text-sm text-muted-foreground">{phase.period}</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>進捗</span>
-                <span>{phase.progress}%</span>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span>進捗</span>
+                  <span>{phase.progress}%</span>
+                </div>
+                <Progress value={phase.progress} className="h-2" />
               </div>
-              <Progress value={phase.progress} className="h-2" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* 選択されているフェーズの場合のみタスクを表示 */}
+          {selectedPhase === phase.id && (
+            <Card>
+              <CardHeader>
+                <CardTitle>やるべきことと参考資料</CardTitle>
+                <CardDescription>現在のフェーズで優先すべきタスクと参考資料</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <GradualTypeTasks 
+                  selectedPhase={selectedPhase}
+                  onUpdateProgress={(progress) => onUpdateProgress(selectedPhase, progress)}
+                  onNavigateToLibrary={onNavigateToLibrary}
+                />
+              </CardContent>
+            </Card>
+          )}
+        </div>
       ))}
     </div>
   )

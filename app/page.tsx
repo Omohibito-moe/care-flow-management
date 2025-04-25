@@ -55,10 +55,10 @@ export default function Home() {
       <div className="min-h-screen bg-white">
         <div className="container mx-auto py-16">
           {/* ヒーローセクション */}
-          <div className="text-center space-y-6 mb-16">
-            <h1 className="text-4xl font-bold">もしもナビ</h1>
+          <div className="mb-16">
+            <h1 className="text-4xl font-bold mb-6">もしもナビ</h1>
             
-            <div className="max-w-2xl mx-auto space-y-4">
+            <div className="max-w-2xl space-y-4">
               <p className="text-xl text-gray-600">
                 介護の始まりで、迷わない。
               </p>
@@ -70,7 +70,7 @@ export default function Home() {
           </div>
 
           {/* 診断フロー */}
-          <div className="max-w-3xl mx-auto">
+          <div className="max-w-3xl">
             <div className="bg-white rounded-lg border p-8">
               <DiagnosisFlow onComplete={handleDiagnosisComplete} />
             </div>

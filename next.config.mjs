@@ -8,6 +8,13 @@ const nextConfig = {
   },
   images: {
     unoptimized: true,
+    domains: ['example.com'],
+  },
+  output: 'standalone',
+  poweredByHeader: false,
+  compress: true,
+  experimental: {
+    optimizeCss: true,
   },
 }
 
